@@ -1,0 +1,18 @@
+nodes:
+  - address: 23.94.217.130
+    user: admin
+    role: [controlplane, etcd, worker]
+  - address: 192.241.148.238
+    user: admin2
+    role: [controlplane, etcd, worker]
+
+services:
+  etcd:
+    snapshot: true
+    creation: 6h
+    retention: 24h
+network:
+  plugin: canal
+authentication:
+  strategy: x509
+ssh_key_path: ~/.ssh/id_rsa

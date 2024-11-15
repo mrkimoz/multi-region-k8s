@@ -1,0 +1,7 @@
+- name: Install Rancher Agent
+  shell: |
+    docker run -d --privileged \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    rancher/rancher-agent:latest \
+    https://<RANCHER_SERVER_IP>:443/v3/scripts/<TOKEN>
+  become: yes

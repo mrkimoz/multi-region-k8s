@@ -1,0 +1,10 @@
+[Interface]
+PrivateKey = {{ lookup('file', '/etc/wireguard/privatekey') }}
+Address = 10.0.0.{{ inventory_hostname[-1:] }}/24
+ListenPort = 51820
+
+[Peer]
+PublicKey = <Public_Key_of_Other_Node>
+AllowedIPs = 10.0.0.0/24
+Endpoint = <Other_Node_IP>:51820
+PersistentKeepalive = 25

@@ -1,0 +1,17 @@
+- name: Pull WireGuard-UI Docker Image
+  docker_image:
+    name: ngoduykhanh/wireguard-ui
+    source: pull
+
+- name: Run WireGuard-UI Container
+  docker_container:
+    name: wireguard-ui
+    image: ngoduykhanh/wireguard-ui
+    state: started
+    restart_policy: always
+    ports:
+      - "5000:5000"
+    env:
+      WGUI_USERNAME: "admin"
+      WGUI_PASSWORD: "{{ wireguard_ui_password }}"
+  become: yes

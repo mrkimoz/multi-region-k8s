@@ -1,0 +1,25 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Set up Kubernetes context
+        uses: azure/k8s-set-context@v1
+        with:
+          namespace: default
+          cluster-name: ${{ secrets.K8S_CLUSTER_NAME }}
+          context: ${{ secrets.K8S_CONTEXT }}
+          certificate: ${{ secrets.K8S_CERTIFICATE }}
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install my-app ./charts/my-app --set image.tag=${{ github.sha }}

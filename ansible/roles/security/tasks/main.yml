@@ -1,0 +1,13 @@
+- name: Configure SSH for Key-Based Access Only
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    block: |
+      PermitRootLogin prohibit-password
+      PasswordAuthentication no
+  notify: Restart SSH
+
+handlers:
+  - name: Restart SSH
+    service:
+      name: sshd
+      state: restarted

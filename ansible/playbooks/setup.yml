@@ -1,0 +1,12 @@
+- name: Initialize and Secure Hosts
+  hosts: all
+  vars_files:
+    - ../../vars/vault.yml
+  roles:
+    - k8s-dependencies
+    - vpn
+    - wireguard-ui
+    - security
+    - rke-setup
+    - rancher-agent
+    - nginx-ingress

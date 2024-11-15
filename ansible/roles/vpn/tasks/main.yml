@@ -1,0 +1,11 @@
+- name: Install WireGuard
+  apt:
+    name: wireguard
+    state: present
+  become: yes
+
+- name: Configure WireGuard Interface
+  template:
+    src: ../../files/wireguard_interface.j2
+    dest: /etc/wireguard/wg0.conf
+  become: yes
