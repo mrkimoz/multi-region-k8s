@@ -52,6 +52,10 @@
   become: no
   changed_when: false
 
+- name: Set private key variable
+  set_fact:
+    private_key_decoded: "{{ private_key_content.content | b64decode }}"
+    
 # Server-specific tasks
 - name: Configure WireGuard as VPN server
   template:
@@ -60,8 +64,8 @@
   become: yes
   when: "'rancher' in group_names"
   vars:
-    peers: "{{ groups['vps'] | map('extract', hostvars, 'vpn_config') | list }}"
-    private_key_decoded: "{{ private_key_content.content | b64decode }}"
+    peers: >
+      {{ groups['vps'] | map('extract', hostvars, ['current_node_public_key', 'ansible_host']) | list }}
 
 - name: Check if WireGuard interface is active
   command: ip link show wg0
@@ -89,7 +93,7 @@
   vars:
     server_public_key: "{{ hostvars[groups['rancher'][0]]['current_node_public_key'].stdout.strip() }}"
     vpn_server_ip: "{{ hostvars[groups['rancher'][0]]['ansible_host'] }}"
-    client_ip: "{{ inventory_hostname }}"
+
 
 - name: Start WireGuard client
   command: "wg-quick up wg0"
