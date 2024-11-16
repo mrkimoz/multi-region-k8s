@@ -17,6 +17,7 @@
   args:
     creates: /etc/wireguard/privatekey
   become: yes
+  when: not wg_private_key.stat.exists
 
 - name: Validate WireGuard private key
   shell: |
@@ -36,28 +37,49 @@
   register: current_node_public_key
   become: yes
 
-- name: Configure WireGuard Interface
+- name: Collect public key and IP for VPN configuration
+  set_fact:
+    vpn_config:
+      public_key: "{{ current_node_public_key.stdout.strip() }}"
+      ip: "{{ ansible_host | default(inventory_hostname) }}"
+
+- name: Collect all nodes' public keys
+  add_host:
+    name: "{{ inventory_hostname }}"
+    public_key: "{{ current_node_public_key.stdout.strip() }}"
+    private_key_decoded: "{{ private_key_content.content | b64decode }}"
+    ansible_host: "{{ ansible_host | default(inventory_hostname) }}"
+  become: no
+  changed_when: false
+
+# Server-specific tasks
+- name: Configure WireGuard as VPN server
   template:
     src: ../../files/wireguard_interface.j2
     dest: /etc/wireguard/wg0.conf
   become: yes
+  when: "'rancher' in group_names"
   vars:
-    private_key_decoded: "{{ private_key_content.content | b64decode }}"
-    vpn_server_ip: "{{ rancher_ip }}"
-    peer_public_key: "{{ hostvars[peer_ip]['current_node_public_key'].stdout }}"
+    peers: "{{ groups['vps'] | map('extract', hostvars, 'vpn_config') | list }}"
 
-- name: Check if WireGuard interface is active
-  command: ip link show wg0
-  register: wg_interface_status
-  failed_when: false
-  changed_when: false
-
-- name: Bring down WireGuard interface if active
-  command: wg-quick down wg0
-  become: yes
-  when: wg_interface_status.rc == 0
-
-- name: Bring up WireGuard interface
+- name: Start WireGuard server
   command: "wg-quick up wg0"
   become: yes
-#  when: wg_private_key.stat.exists
+  when: "'rancher' in group_names"
+
+# Client-specific tasks
+- name: Configure WireGuard as VPN client
+  template:
+    src: ../../files/wireguard_peer.j2
+    dest: /etc/wireguard/wg0.conf
+  become: yes
+  when: "'rancher' not in group_names"
+  vars:
+    server_public_key: "{{ hostvars[groups['rancher'][0]]['current_node_public_key'].stdout.strip() }}"
+    vpn_server_ip: "{{ hostvars[groups['rancher'][0]]['ansible_host'] }}"
+    client_ip: "{{ inventory_hostname }}"
+
+- name: Start WireGuard client
+  command: "wg-quick up wg0"
+  become: yes
+  when: "'rancher' not in group_names"
