@@ -3,5 +3,8 @@
     docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     rancher/rancher-agent:latest \
-    https://<RANCHER_SERVER_IP>:443/v3/scripts/<TOKEN>
+    https://{{ rancher_server_ip }}/v3/scripts/{{ rancher_agent_token }}
   become: yes
+  vars:
+    rancher_server_ip: "188.166.208.52"  # Replace with your Rancher server's IP or hostname
+    rancher_agent_token: "KABCDEFG1234567890TOKEN"  # Replace with the actual Rancher agent token

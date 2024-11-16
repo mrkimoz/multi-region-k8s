@@ -1,9 +1,9 @@
 nodes:
   - address: 23.94.217.130
-    user: admin
+    user: root
     role: [controlplane, etcd, worker]
-  - address: 192.241.148.238
-    user: admin2
+  - address: 152.42.234.139
+    user: root
     role: [controlplane, etcd, worker]
 
 services:

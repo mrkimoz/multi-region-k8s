@@ -1,7 +1,35 @@
+- name: Install Python PIP
+  apt:
+    name: python3-pip
+    state: present
+  become: yes
+
+- name: Install Docker SDK for Python
+  pip:
+    name:
+      - docker
+      - requests
+    state: present
+  become: yes
+
+- name: Install Docker
+  apt:
+    name: docker.io
+    state: present
+  become: yes
+
+- name: Ensure Docker service is started and enabled
+  service:
+    name: docker
+    state: started
+    enabled: true
+  become: yes
+
 - name: Pull WireGuard-UI Docker Image
   docker_image:
     name: ngoduykhanh/wireguard-ui
     source: pull
+  become: yes
 
 - name: Run WireGuard-UI Container
   docker_container:
@@ -14,4 +42,5 @@
     env:
       WGUI_USERNAME: "admin"
       WGUI_PASSWORD: "{{ wireguard_ui_password }}"
+    container_default_behavior: compatibility
   become: yes

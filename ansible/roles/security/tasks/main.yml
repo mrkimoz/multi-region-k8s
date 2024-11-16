@@ -5,9 +5,3 @@
       PermitRootLogin prohibit-password
       PasswordAuthentication no
   notify: Restart SSH
-
-handlers:
-  - name: Restart SSH
-    service:
-      name: sshd
-      state: restarted

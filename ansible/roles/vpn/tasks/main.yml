@@ -4,8 +4,69 @@
     state: present
   become: yes
 
+- name: Check if WireGuard private key exists
+  stat:
+    path: /etc/wireguard/privatekey
+  register: wg_private_key
+
+#- name: Generate WireGuard private and public keys
+#  shell: |
+#    umask 077
+#    wg genkey > /etc/wireguard/privatekey
+#    cat /etc/wireguard/privatekey | wg pubkey > /etc/wireguard/publickey
+#  args:
+#    creates: /etc/wireguard/privatekey
+#  become: yes
+
+- name: Generate WireGuard private and public keys
+  shell: |
+    umask 077
+    wg genkey > /etc/wireguard/privatekey
+    cat /etc/wireguard/privatekey | wg pubkey > /etc/wireguard/publickey
+  args:
+    creates: /etc/wireguard/privatekey
+  become: yes
+
+- name: Validate WireGuard private key
+  shell: |
+    wc -c < /etc/wireguard/privatekey
+  register: privatekey_validation
+  failed_when: privatekey_validation.stdout | int != 45
+  become: yes
+
+- name: Read WireGuard private key
+  slurp:
+    src: /etc/wireguard/privatekey
+  register: private_key_content
+  become: yes
+
+- name: Fetch public key of current node
+  shell: cat /etc/wireguard/publickey
+  register: current_node_public_key
+  become: yes
+
 - name: Configure WireGuard Interface
   template:
     src: ../../files/wireguard_interface.j2
     dest: /etc/wireguard/wg0.conf
   become: yes
+  vars:
+    private_key_decoded: "{{ private_key_content.content | b64decode }}"
+    peer_ip: "{{ groups['vps'] | difference([inventory_hostname]) | first }}"
+    peer_public_key: "{{ hostvars[peer_ip]['current_node_public_key'].stdout }}"
+
+- name: Check if WireGuard interface is active
+  command: ip link show wg0
+  register: wg_interface_status
+  failed_when: false
+  changed_when: false
+
+- name: Bring down WireGuard interface if active
+  command: wg-quick down wg0
+  become: yes
+  when: wg_interface_status.rc == 0
+
+- name: Bring up WireGuard interface
+  command: "wg-quick up wg0"
+  become: yes
+#  when: wg_private_key.stat.exists
