@@ -1,6 +1,6 @@
 [Interface]
 PrivateKey = {{ private_key_decoded }}
-Address = 10.0.0.{{ loop.index + 1 }}/24
+Address = 10.0.0.{{ inventory_hostname[-1:] }}/24
 
 [Peer]
 PublicKey = {{ server_public_key }}
