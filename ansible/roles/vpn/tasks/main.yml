@@ -61,6 +61,7 @@
   when: "'rancher' in group_names"
   vars:
     peers: "{{ groups['vps'] | map('extract', hostvars, 'vpn_config') | list }}"
+    private_key_decoded: "{{ private_key_content.content | b64decode }}"
 
 - name: Start WireGuard server
   command: "wg-quick up wg0"
