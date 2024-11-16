@@ -9,15 +9,6 @@
     path: /etc/wireguard/privatekey
   register: wg_private_key
 
-#- name: Generate WireGuard private and public keys
-#  shell: |
-#    umask 077
-#    wg genkey > /etc/wireguard/privatekey
-#    cat /etc/wireguard/privatekey | wg pubkey > /etc/wireguard/publickey
-#  args:
-#    creates: /etc/wireguard/privatekey
-#  become: yes
-
 - name: Generate WireGuard private and public keys
   shell: |
     umask 077
@@ -52,7 +43,7 @@
   become: yes
   vars:
     private_key_decoded: "{{ private_key_content.content | b64decode }}"
-    peer_ip: "{{ groups['vps'] | difference([inventory_hostname]) | first }}"
+    vpn_server_ip: "{{ rancher_ip }}"
     peer_public_key: "{{ hostvars[peer_ip]['current_node_public_key'].stdout }}"
 
 - name: Check if WireGuard interface is active
