@@ -63,6 +63,17 @@
     peers: "{{ groups['vps'] | map('extract', hostvars, 'vpn_config') | list }}"
     private_key_decoded: "{{ private_key_content.content | b64decode }}"
 
+- name: Check if WireGuard interface is active
+  command: ip link show wg0
+  register: wg_interface_status
+  failed_when: false
+  changed_when: false
+
+- name: Bring down WireGuard interface if active
+  command: wg-quick down wg0
+  become: yes
+  when: wg_interface_status.rc == 0
+
 - name: Start WireGuard server
   command: "wg-quick up wg0"
   become: yes
