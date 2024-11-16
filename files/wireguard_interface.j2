@@ -3,4 +3,8 @@ PrivateKey = {{ private_key_decoded }}
 Address = 10.0.0.1/24
 ListenPort = 51820
 
-{{ peer_configs }}
+{% for host in groups['vps'] %}
+[Peer]
+PublicKey = {{ hostvars[host]['current_node_public_key'].stdout }}
+AllowedIPs = 10.0.0.{{ loop.index }}/32
+{% endfor %}
