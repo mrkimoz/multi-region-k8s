@@ -6,5 +6,5 @@ ListenPort = 51820
 {% for host in groups['vps'] %}
 [Peer]
 PublicKey = {{ hostvars[host]['current_node_public_key'].stdout }}
-AllowedIPs = 10.0.0.{{ loop.index }}/32
+AllowedIPs = {{ vpn_ip }}/32
 {% endfor %}
