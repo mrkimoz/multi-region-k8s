@@ -1,9 +1,9 @@
 [Interface]
 PrivateKey = {{ private_key_decoded }}
-Address = 10.0.0.{{ inventory_hostname[-1:] }}/24
+Address = {{ vpn_ip }}
 
 [Peer]
-PublicKey = {{ vpn_server_public_key }}
-Endpoint = {{ vpn_server_ip }}:51820
+PublicKey = {{ hostvars[groups['rancher'][0]]['current_node_public_key'].stdout }}
+Endpoint = {{ hostvars[groups['rancher'][0]]['ansible_host'] }}:51820
 AllowedIPs = 0.0.0.0/0
 PersistentKeepalive = 25
