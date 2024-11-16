@@ -44,12 +44,6 @@
   become: yes
   vars:
     private_key_decoded: "{{ private_key_content.content | b64decode }}"
-    peer_configs: >-
-      {% for host in groups['vps'] %}
-      [Peer]
-      PublicKey = {{ hostvars[host]['current_node_public_key'].stdout }}
-      AllowedIPs = 10.0.0.{{ loop.index }}/32
-      {% endfor %}
 
 - name: Configure WireGuard client (VPS nodes)
   template:
@@ -59,8 +53,7 @@
   become: yes
   vars:
     private_key_decoded: "{{ private_key_content.content | b64decode }}"
-    vpn_server_public_key: "{{ hostvars[groups['rancher'][0]]['current_node_public_key'].stdout }}"
-    vpn_server_ip: "{{ hostvars[groups['rancher'][0]]['ansible_host'] }}"
+    vpn_ip: "{{ hostvars[inventory_hostname]['vpn_ip'] }}"
 
 - name: Check if WireGuard interface is active
   command: ip link show wg0
